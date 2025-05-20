@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteMaster - Simple Note Taking App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="material-icons">note</span>
+                <h1>NoteMaster</h1>
+            </div>
+            <div class="header-actions">
+                <button id="new-note-btn" class="primary-btn">
+                    <span class="material-icons">add</span>
+                    New Note
+                </button>
+            </div>
+        </header>
+        
+        <div class="app-content">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>My Notes</h2>
+                    <div class="search-container">
+                        <span class="material-icons">search</span>
+                        <input type="text" id="search-notes" placeholder="Search notes...">
+                    </div>
+                </div>
+                <div class="notes-list" id="notes-list">
+                    <!-- Notes will be populated here by JavaScript -->
+                </div>
+            </aside>
+            
+            <main class="note-editor">
+                <div class="editor-placeholder" id="editor-placeholder">
+                    <span class="material-icons">note_add</span>
+                    <p>Select a note or create a new one to get started</p>
+                </div>
+                <div class="editor-container" id="editor-container">
+                    <div class="editor-header">
+                        <input type="text" id="note-title" placeholder="Note title">
+                        <div class="editor-actions">
+                            <button id="save-note-btn" class="icon-btn" title="Save note">
+                                <span class="material-icons">save</span>
+                            </button>
+                            <button id="delete-note-btn" class="icon-btn danger" title="Delete note">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="note-content" placeholder="Write your note here..."></textarea>
+                    <div class="editor-footer">
+                        <span id="last-edited">Last edited: Never</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 
