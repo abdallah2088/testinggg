@@ -18,17 +18,60 @@
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --danger-color-rgb: 239, 35, 60; /* RGB for #ef233c */
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 8px;
+
+    /* Generic theme variables for light theme (defaults) */
+    --background-color: #f9fafb;      /* Default body background */
+    --surface-color: white;           /* Default for cards, .app-container */
+    --text-color: var(--dark-color);  /* Main text color (#2b2d42) */
+    --secondary-text-color: var(--medium-color); /* Secondary text color (#8d99ae) */
+    --header-bg-color: white;         /* Header background */
+    --input-bg-color: white;          /* Input field backgrounds */
+    --hover-bg-color: #f0f4f8;        /* Hover state for items like note cards */
+    --active-bg-color: #e8f0fe;       /* Active state for items like selected note card */
+    --btn-text-color: white;          /* Text color for primary buttons */
+    /* Note: --border-color (#e5e7eb) is already defined and used as the default border color */
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+    --primary-color: #5A7FEE; /* Slightly brighter blue for dark mode */
+    --primary-hover: #7D9AFF;
+    --dark-color: #E0E0E0; /* Light text for dark backgrounds */
+    --medium-color: #B0B0B0; /* Lighter grey for secondary text */
+    --light-color: #1E1E1E; /* Dark background for surfaces / main app container bg */
+    --danger-color: #FF5252; /* Brighter red for dark mode */
+    --danger-hover: #FF7979;
+    --success-color: #4CAF50; /* Standard success green */
+    --border-color: #333333; /* Darker border color */
+    
+    /* Specific background/color variables for dark theme, derived from the above */
+    --background-color: #121212; /* Overall page background */
+    --surface-color: #1E1E1E; /* Cards, headers, sidebars etc. */
+    --text-color: #E0E0E0; /* Default text color */
+    --secondary-text-color: #B0B0B0; /* Muted text */
+    --header-bg-color: #252525; /* Header background, slightly different from surface */
+    --input-bg-color: #333333; /* Input field backgrounds */
+    --hover-bg-color: #2c2c2c; /* Hover states for list items etc. */
+    --active-bg-color: #3A3A3A; /* Active states for list items etc. */
+    --btn-text-color: #FFFFFF; /* Text color for primary buttons */
+    --danger-color-rgb: 255, 82, 82; /* RGB for #FF5252 */
+
+    /* Dark mode shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(255, 255, 255, 0.03);
+    --shadow-md: 0 4px 6px -1px rgba(255, 255, 255, 0.04), 0 2px 4px -1px rgba(255, 255, 255, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(255, 255, 255, 0.05), 0 4px 6px -2px rgba(255, 255, 255, 0.02);
 }
 
 body {
     font-family: 'Inter', sans-serif;
     font-size: 16px;
     line-height: 1.5;
-    color: var(--dark-color);
-    background-color: #f9fafb;
+    color: var(--text-color); /* Use theme-aware text color */
+    background-color: var(--background-color); /* Use theme-aware background color */
     height: 100vh;
     overflow: hidden;
 }
@@ -40,7 +83,7 @@ body {
     height: 100vh;
     max-width: 1400px;
     margin: 0 auto;
-    background-color: white;
+    background-color: var(--surface-color); /* Use theme-aware surface color */
     box-shadow: var(--shadow-lg);
 }
 
@@ -49,7 +92,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    background-color: white;
+    background-color: var(--header-bg-color); /* Use theme-aware header background */
     border-bottom: 1px solid var(--border-color);
     height: 64px;
 }
@@ -79,7 +122,7 @@ body {
 /* Sidebar styles */
 .sidebar {
     width: 300px;
-    background-color: #f9fafb;
+    background-color: var(--surface-color); /* Use theme-aware surface color */
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -95,7 +138,7 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
-    color: var(--dark-color);
+    color: var(--text-color); /* Use theme-aware text color */
 }
 
 .search-container {
@@ -108,6 +151,8 @@ body {
     width: 100%;
     padding: 0.5rem 0.75rem 0.5rem 2rem;
     border: 1px solid var(--border-color);
+    background-color: var(--input-bg-color); /* Use theme-aware input background */
+    color: var(--text-color); /* Use theme-aware text color */
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     outline: none;
@@ -121,7 +166,7 @@ body {
 .search-container .material-icons {
     position: absolute;
     left: 0.5rem;
-    color: var(--medium-color);
+    color: var(--secondary-text-color); /* Use theme-aware secondary text color */
     font-size: 1.2rem;
 }
 
@@ -141,11 +186,11 @@ body {
 }
 
 .note-card:hover {
-    background-color: #f0f4f8;
+    background-color: var(--hover-bg-color); /* Use theme-aware hover background */
 }
 
 .note-card.active {
-    background-color: #e8f0fe;
+    background-color: var(--active-bg-color); /* Use theme-aware active background */
     border-color: var(--primary-color);
 }
 
@@ -156,11 +201,12 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-color); /* Use theme-aware text color */
 }
 
 .note-card p {
     font-size: 0.825rem;
-    color: var(--medium-color);
+    color: var(--secondary-text-color); /* Use theme-aware secondary text color */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -168,7 +214,7 @@ body {
 
 .note-card .date {
     font-size: 0.75rem;
-    color: var(--medium-color);
+    color: var(--secondary-text-color); /* Use theme-aware secondary text color */
     margin-top: 0.5rem;
 }
 
@@ -187,7 +233,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: var(--medium-color);
+    color: var(--secondary-text-color); /* Use theme-aware secondary text color */
     text-align: center;
     padding: 2rem;
 }
@@ -230,6 +276,8 @@ body {
     outline: none;
     width: 70%;
     padding: 0.25rem 0;
+    color: var(--text-color); /* Use theme-aware text color */
+    background-color: transparent; /* Should inherit from editor-header or app-header */
 }
 
 .editor-actions {
@@ -247,6 +295,8 @@ body {
     resize: none;
     outline: none;
     font-family: 'Inter', sans-serif;
+    background-color: var(--input-bg-color); /* Use theme-aware input background or surface */
+    color: var(--text-color); /* Use theme-aware text color */
 }
 
 #note-content:focus {
@@ -258,7 +308,7 @@ body {
     justify-content: flex-end;
     padding: 0.75rem 0;
     font-size: 0.8rem;
-    color: var(--medium-color);
+    color: var(--secondary-text-color); /* Use theme-aware secondary text color */
 }
 
 /* Buttons */
@@ -267,7 +317,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     background-color: var(--primary-color);
-    color: white;
+    color: var(--btn-text-color); /* Use theme-aware button text color */
     border: none;
     border-radius: var(--radius-md);
     padding: 0.5rem 1rem;
@@ -291,6 +341,7 @@ body {
     justify-content: center;
     background-color: transparent;
     border: 1px solid var(--border-color);
+    color: var(--text-color); /* Use theme-aware text color for icons */
     border-radius: var(--radius-md);
     width: 36px;
     height: 36px;
@@ -299,11 +350,16 @@ body {
 }
 
 .icon-btn:hover {
-    background-color: #f9fafb;
+    background-color: var(--hover-bg-color); /* Use theme-aware hover background */
+    color: var(--text-color); /* Ensure icon color contrasts with hover background */
+}
+
+.icon-btn.danger { /* Ensure danger icon itself uses danger color by default if not overridden by hover */
+    color: var(--danger-color);
 }
 
 .icon-btn.danger:hover {
-    background-color: #fdedee;
+    background-color: rgba(var(--danger-color-rgb), 0.1); /* Use theme-aware RGB for opacity */
     border-color: var(--danger-color);
     color: var(--danger-color);
 }
