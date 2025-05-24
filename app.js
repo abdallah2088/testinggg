@@ -9,6 +9,7 @@ const saveNoteBtn = document.getElementById('save-note-btn');
 const deleteNoteBtn = document.getElementById('delete-note-btn');
 const searchInput = document.getElementById('search-notes');
 const lastEdited = document.getElementById('last-edited');
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
 
 // App state
 let notes = [];
@@ -19,7 +20,40 @@ function initApp() {
     loadNotes();
     renderNotesList();
     setupEventListeners();
+    loadTheme(); // Load theme preference on app start
 }
+
+// --- Theme Switching Logic ---
+
+function loadTheme() {
+    const themePreference = localStorage.getItem('themePreference');
+    const iconElement = themeToggleBtn.querySelector('.material-icons');
+    if (themePreference === 'dark') {
+        document.body.dataset.theme = 'dark';
+        if (iconElement) iconElement.textContent = 'brightness_7'; // Sun icon
+    } else {
+        // Default to light theme
+        delete document.body.dataset.theme; // Or document.body.dataset.theme = 'light';
+        if (iconElement) iconElement.textContent = 'brightness_4'; // Moon icon
+    }
+}
+
+function toggleTheme() {
+    const iconElement = themeToggleBtn.querySelector('.material-icons');
+    if (document.body.dataset.theme === 'dark') {
+        // Switch to light theme
+        delete document.body.dataset.theme;
+        localStorage.setItem('themePreference', 'light');
+        if (iconElement) iconElement.textContent = 'brightness_4'; // Moon icon
+    } else {
+        // Switch to dark theme
+        document.body.dataset.theme = 'dark';
+        localStorage.setItem('themePreference', 'dark');
+        if (iconElement) iconElement.textContent = 'brightness_7'; // Sun icon
+    }
+}
+
+// --- End Theme Switching Logic ---
 
 // Load notes from localStorage
 function loadNotes() {
@@ -230,6 +264,11 @@ function setupEventListeners() {
         typingTimer = setTimeout(doneTyping, doneTypingInterval);
     });
     
+    // Theme toggle button
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+
     // Handle keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Ctrl/Cmd + S to save
