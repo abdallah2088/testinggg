@@ -4,6 +4,7 @@ const editorPlaceholder = document.getElementById('editor-placeholder');
 const editorContainer = document.getElementById('editor-container');
 const noteTitle = document.getElementById('note-title');
 const noteContent = document.getElementById('note-content');
+const noteCategory = document.getElementById('note-category'); // Added category input selector
 const newNoteBtn = document.getElementById('new-note-btn');
 const saveNoteBtn = document.getElementById('save-note-btn');
 const deleteNoteBtn = document.getElementById('delete-note-btn');
@@ -60,6 +61,12 @@ function loadNotes() {
     const savedNotes = localStorage.getItem('notes');
     if (savedNotes) {
         notes = JSON.parse(savedNotes);
+        // Ensure all notes have a category
+        notes.forEach(note => {
+            if (!note.hasOwnProperty('category')) {
+                note.category = 'Uncategorized';
+            }
+        });
     } else {
         // Create sample note if no notes exist
         const sampleNote = {
@@ -67,7 +74,8 @@ function loadNotes() {
             title: 'Welcome to NoteMaster!',
             content: 'This is a simple note-taking app. Create new notes, edit them, and they will be saved automatically.',
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            category: 'Uncategorized' // Add category to sample note
         };
         notes = [sampleNote];
         saveNotesToStorage();
@@ -126,22 +134,50 @@ function renderNotesList(searchTerm = '') {
         `;
         return;
     }
-    
-    filteredNotes.forEach(note => {
-        const noteCard = document.createElement('div');
-        noteCard.className = `note-card ${note.id === activeNoteId ? 'active' : ''}`;
-        noteCard.dataset.id = note.id;
-        
-        noteCard.innerHTML = `
-            <h3>${note.title || 'Untitled Note'}</h3>
-            <p>${getContentPreview(note.content)}</p>
-            <div class="date">
-                ${formatDate(note.updatedAt)}
-            </div>
-        `;
-        
-        noteCard.addEventListener('click', () => selectNote(note.id));
-        notesList.appendChild(noteCard);
+
+    // Group notes by category
+    const groupedNotes = filteredNotes.reduce((acc, note) => {
+        const category = note.category || "Uncategorized";
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(note);
+        return acc;
+    }, {});
+
+    // Sort categories: alphabetically, with "Uncategorized" last
+    const categoryOrder = Object.keys(groupedNotes).sort((a, b) => {
+        if (a === "Uncategorized") return 1; // Move Uncategorized to the end
+        if (b === "Uncategorized") return -1; // Move Uncategorized to the end
+        return a.localeCompare(b); // Alphabetical sort for others
+    });
+
+    categoryOrder.forEach(categoryName => {
+        const categoryGroup = document.createElement('div');
+        categoryGroup.className = 'category-group';
+
+        const categoryHeader = document.createElement('h3');
+        categoryHeader.className = 'category-header';
+        categoryHeader.textContent = categoryName;
+        categoryGroup.appendChild(categoryHeader);
+
+        groupedNotes[categoryName].forEach(note => {
+            const noteCard = document.createElement('div');
+            noteCard.className = `note-card ${note.id === activeNoteId ? 'active' : ''}`;
+            noteCard.dataset.id = note.id;
+            
+            noteCard.innerHTML = `
+                <h3>${note.title || 'Untitled Note'}</h3>
+                <p>${getContentPreview(note.content)}</p>
+                <div class="date">
+                    ${formatDate(note.updatedAt)}
+                </div>
+            `;
+            
+            noteCard.addEventListener('click', () => selectNote(note.id));
+            categoryGroup.appendChild(noteCard);
+        });
+        notesList.appendChild(categoryGroup);
     });
 }
 
@@ -156,6 +192,7 @@ function selectNote(noteId) {
         
         noteTitle.value = selectedNote.title;
         noteContent.value = selectedNote.content;
+        noteCategory.value = selectedNote.category; // Populate category field
         lastEdited.textContent = `Last edited: ${formatDate(selectedNote.updatedAt)}`;
         
         // Update active status in the list
@@ -172,13 +209,17 @@ function createNewNote() {
         title: '',
         content: '',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        category: 'Uncategorized' // Add category to new notes
     };
     
     notes.unshift(newNote);
     saveNotesToStorage();
     renderNotesList();
     selectNote(newNote.id);
+    // Ensure category field is updated for new note, though selectNote should handle it.
+    // Adding it explicitly for clarity and safety, matching the newNote object's state.
+    noteCategory.value = newNote.category; 
     noteTitle.focus();
 }
 
@@ -189,10 +230,13 @@ function saveNote() {
     const noteIndex = notes.findIndex(note => note.id === activeNoteId);
     if (noteIndex === -1) return;
     
+    const categoryValue = noteCategory.value.trim() || "Uncategorized"; // Get category or default
+
     const updatedNote = {
         ...notes[noteIndex],
         title: noteTitle.value,
         content: noteContent.value,
+        category: categoryValue, // Save category
         updatedAt: new Date().toISOString()
     };
     
@@ -249,7 +293,10 @@ function setupEventListeners() {
     const doneTypingInterval = 1000; // 1 second
     
     const doneTyping = () => {
-        if (activeNoteId && (noteTitle.value || noteContent.value)) {
+        // Updated condition to also check category field for changes,
+        // or rely on saveNote to handle empty title/content if category is the only change.
+        // For simplicity, existing condition is fine as saveNote will be called.
+        if (activeNoteId) { // Check if there's an active note to save
             saveNote();
         }
     };
@@ -260,6 +307,11 @@ function setupEventListeners() {
     });
     
     noteContent.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(doneTyping, doneTypingInterval);
+    });
+
+    noteCategory.addEventListener('input', () => { // Added event listener for category input
         clearTimeout(typingTimer);
         typingTimer = setTimeout(doneTyping, doneTypingInterval);
     });

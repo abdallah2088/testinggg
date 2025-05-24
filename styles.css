@@ -267,6 +267,14 @@ body {
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border-color);
+    gap: 1rem; /* Add gap between wrapper and actions */
+}
+
+.title-category-wrapper {
+    flex: 1; /* Allow this to take available space */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Space between title and category */
 }
 
 #note-title {
@@ -274,11 +282,30 @@ body {
     font-weight: 600;
     border: none;
     outline: none;
-    width: 70%;
+    width: 100%; /* Take full width of wrapper */
     padding: 0.25rem 0;
     color: var(--text-color); /* Use theme-aware text color */
-    background-color: transparent; /* Should inherit from editor-header or app-header */
+    background-color: transparent; 
 }
+
+#note-category {
+    font-size: 0.9rem;
+    font-weight: 400; /* Lighter than title */
+    border: none;
+    outline: none;
+    width: 100%; /* Take full width of wrapper */
+    padding: 0.25rem 0;
+    color: var(--secondary-text-color); /* Use secondary text color */
+    background-color: transparent;
+    /* margin-top: 0.5rem; /* Replaced by gap in wrapper */
+}
+
+#note-title::placeholder,
+#note-category::placeholder {
+    color: var(--secondary-text-color);
+    opacity: 0.7;
+}
+
 
 .editor-actions {
     display: flex;
