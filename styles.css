@@ -288,24 +288,48 @@ body {
     background-color: transparent; 
 }
 
-#note-category {
+/* Styles for the new category select and input */
+#category-select,
+#new-category-input {
     font-size: 0.9rem;
-    font-weight: 400; /* Lighter than title */
-    border: none;
+    font-weight: 400;
+    width: 100%;
+    padding: 0.35rem 0.5rem; /* Adjusted padding for select and input */
+    color: var(--text-color);
+    background-color: var(--input-bg-color); /* Use theme-aware input background */
+    border: 1px solid var(--border-color); /* Standard border */
+    border-radius: var(--radius-sm); /* Consistent border radius */
     outline: none;
-    width: 100%; /* Take full width of wrapper */
-    padding: 0.25rem 0;
-    color: var(--secondary-text-color); /* Use secondary text color */
-    background-color: transparent;
-    /* margin-top: 0.5rem; /* Replaced by gap in wrapper */
+    -webkit-appearance: none; /* Remove default select styling on Safari/Chrome */
+    -moz-appearance: none;    /* Remove default select styling on Firefox */
+    appearance: none;         /* Remove default select styling */
 }
 
-#note-title::placeholder,
-#note-category::placeholder {
+#category-select {
+    /* Add a custom arrow for select, as appearance:none removes the default one */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right .7em top 50%;
+    background-size: .65em auto;
+    padding-right: 2.5em; /* Make space for the arrow */
+}
+
+#category-select:focus,
+#new-category-input:focus {
+    border-color: var(--primary-color); /* Highlight focus */
+}
+
+/* Placeholder styling for new-category-input */
+#new-category-input::placeholder {
     color: var(--secondary-text-color);
     opacity: 0.7;
 }
 
+/* Placeholder for note-title needs to be separate now */
+#note-title::placeholder {
+    color: var(--secondary-text-color);
+    opacity: 0.7;
+}
 
 .editor-actions {
     display: flex;

@@ -4,7 +4,9 @@ const editorPlaceholder = document.getElementById('editor-placeholder');
 const editorContainer = document.getElementById('editor-container');
 const noteTitle = document.getElementById('note-title');
 const noteContent = document.getElementById('note-content');
-const noteCategory = document.getElementById('note-category'); // Added category input selector
+// const noteCategory = document.getElementById('note-category'); // Old text input
+const categorySelect = document.getElementById('category-select'); // New select element
+const newCategoryInput = document.getElementById('new-category-input'); // New input for creating categories
 const newNoteBtn = document.getElementById('new-note-btn');
 const saveNoteBtn = document.getElementById('save-note-btn');
 const deleteNoteBtn = document.getElementById('delete-note-btn');
@@ -19,6 +21,7 @@ let activeNoteId = null;
 // Initialize app
 function initApp() {
     loadNotes();
+    populateCategoryDropdown(); // Populate dropdown on initial load
     renderNotesList();
     setupEventListeners();
     loadTheme(); // Load theme preference on app start
@@ -86,6 +89,62 @@ function loadNotes() {
 function saveNotesToStorage() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
+
+// --- Category Dropdown Logic ---
+
+function getUniqueCategories() {
+    const categories = new Set(["Uncategorized"]); // Start with "Uncategorized"
+    notes.forEach(note => {
+        if (note.category && note.category.trim() !== "") {
+            categories.add(note.category.trim());
+        }
+    });
+    return Array.from(categories).sort((a, b) => { // Custom sort: Uncategorized last, others alphabetical
+        if (a === "Uncategorized") return 1;
+        if (b === "Uncategorized") return -1;
+        return a.localeCompare(b);
+    });
+}
+
+function populateCategoryDropdown(currentNoteCategory) {
+    const uniqueCategories = getUniqueCategories();
+    categorySelect.innerHTML = ''; // Clear existing options
+
+    uniqueCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+    });
+
+    // Add "Create new category..." option
+    const createNewOption = document.createElement('option');
+    createNewOption.value = "__CREATE_NEW__"; // Special value
+    createNewOption.textContent = "Create new category...";
+    categorySelect.appendChild(createNewOption);
+
+    // Try to set the dropdown to the current note's category
+    if (currentNoteCategory && uniqueCategories.includes(currentNoteCategory)) {
+        categorySelect.value = currentNoteCategory;
+    } else if (currentNoteCategory && currentNoteCategory.trim() !== "" && !uniqueCategories.includes(currentNoteCategory)) {
+        // If the note's category isn't in the standard list (e.g. loaded old note before it's saved and added to unique list)
+        // Add it as a temporary option and select it.
+        const tempOption = document.createElement('option');
+        tempOption.value = currentNoteCategory;
+        tempOption.textContent = currentNoteCategory;
+        // Insert it before the "Create new" option
+        categorySelect.insertBefore(tempOption, createNewOption);
+        categorySelect.value = currentNoteCategory;
+    } else {
+        categorySelect.value = "Uncategorized"; // Default
+    }
+    
+    // Hide newCategoryInput by default
+    newCategoryInput.style.display = 'none';
+    newCategoryInput.value = '';
+}
+
+// --- End Category Dropdown Logic ---
 
 // Generate unique ID for notes
 function generateId() {
@@ -192,7 +251,8 @@ function selectNote(noteId) {
         
         noteTitle.value = selectedNote.title;
         noteContent.value = selectedNote.content;
-        noteCategory.value = selectedNote.category; // Populate category field
+        // noteCategory.value = selectedNote.category; // Old: Populate category field
+        populateCategoryDropdown(selectedNote.category); // New: Populate and set category dropdown
         lastEdited.textContent = `Last edited: ${formatDate(selectedNote.updatedAt)}`;
         
         // Update active status in the list
@@ -217,9 +277,8 @@ function createNewNote() {
     saveNotesToStorage();
     renderNotesList();
     selectNote(newNote.id);
-    // Ensure category field is updated for new note, though selectNote should handle it.
-    // Adding it explicitly for clarity and safety, matching the newNote object's state.
-    noteCategory.value = newNote.category; 
+    // Ensure category field is updated for new note
+    // populateCategoryDropdown(newNote.category); // selectNote already does this
     noteTitle.focus();
 }
 
@@ -230,18 +289,43 @@ function saveNote() {
     const noteIndex = notes.findIndex(note => note.id === activeNoteId);
     if (noteIndex === -1) return;
     
-    const categoryValue = noteCategory.value.trim() || "Uncategorized"; // Get category or default
+    let finalCategory = "Uncategorized"; // Default category
+    let newCategoryCreated = false;
+
+    if (categorySelect.value === "__CREATE_NEW__") {
+        const newCatTrimmed = newCategoryInput.value.trim();
+        if (newCatTrimmed !== "") {
+            finalCategory = newCatTrimmed;
+            newCategoryCreated = true; // Mark that a new category was used
+        } else {
+            // If "Create new" is selected but input is empty, default to "Uncategorized"
+            finalCategory = "Uncategorized";
+        }
+    } else if (categorySelect.value) {
+        finalCategory = categorySelect.value;
+    }
+    // If categorySelect.value is somehow empty, it defaults to "Uncategorized" from initialization
 
     const updatedNote = {
         ...notes[noteIndex],
         title: noteTitle.value,
         content: noteContent.value,
-        category: categoryValue, // Save category
+        category: finalCategory, 
         updatedAt: new Date().toISOString()
     };
     
     notes[noteIndex] = updatedNote;
     saveNotesToStorage();
+    
+    // Repopulate dropdown. This will also select the finalCategory.
+    populateCategoryDropdown(finalCategory); 
+
+    if (newCategoryCreated) {
+        newCategoryInput.value = ''; // Clear the input field
+        newCategoryInput.style.display = 'none'; // Hide it
+        // The populateCategoryDropdown should have already set the select value to finalCategory
+    }
+    
     renderNotesList();
     lastEdited.textContent = `Last edited: ${formatDate(updatedNote.updatedAt)}`;
     
@@ -265,6 +349,7 @@ function deleteNote() {
         editorContainer.classList.remove('active');
         editorPlaceholder.style.display = 'flex';
         renderNotesList();
+        populateCategoryDropdown(); // Reset dropdown to default
     }
 }
 
@@ -311,9 +396,55 @@ function setupEventListeners() {
         typingTimer = setTimeout(doneTyping, doneTypingInterval);
     });
 
-    noteCategory.addEventListener('input', () => { // Added event listener for category input
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(doneTyping, doneTypingInterval);
+    // noteCategory.addEventListener('input', () => { // Old event listener for text input
+    //     clearTimeout(typingTimer);
+    //     typingTimer = setTimeout(doneTyping, doneTypingInterval);
+    // });
+
+    categorySelect.addEventListener('change', () => { // Event listener for new select element
+        if (categorySelect.value === "__CREATE_NEW__") {
+            newCategoryInput.style.display = 'block';
+            newCategoryInput.focus();
+        } else {
+            newCategoryInput.style.display = 'none';
+            newCategoryInput.value = ''; // Clear it, just in case
+            // saveNote(); // Auto-save when existing category is selected - This might be too aggressive, let doneTyping handle it or manual save.
+            // Let's rely on the existing typing timer or manual save for title/content. 
+            // If only category is changed, it's an explicit action, so save is fine.
+            // For now, let's assume changing select is an explicit save action.
+            saveNote(); 
+        }
+    });
+
+    newCategoryInput.addEventListener('blur', () => { 
+        // If input is visible and has a value, save.
+        if (newCategoryInput.style.display === 'block' && newCategoryInput.value.trim() !== "") {
+            saveNote(); 
+        } 
+        // If input is visible and empty when blurred, revert dropdown.
+        // (populateCategoryDropdown handles hiding the input again if category changes from __CREATE_NEW__)
+        else if (newCategoryInput.style.display === 'block' && newCategoryInput.value.trim() === "") {
+            const currentNote = notes.find(note => note.id === activeNoteId);
+            const categoryToRevertTo = currentNote ? currentNote.category : "Uncategorized";
+            populateCategoryDropdown(categoryToRevertTo); 
+            // populateCategoryDropdown also hides newCategoryInput if the selected value is not __CREATE_NEW__
+            // If categoryToRevertTo was __CREATE_NEW__ (unlikely here), it would stay visible.
+        }
+    });
+
+    newCategoryInput.addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            if (newCategoryInput.value.trim() !== "") {
+                saveNote();
+                // newCategoryInput.blur(); // saveNote will hide it if successful
+            } else {
+                // If enter is pressed on an empty new category input, revert to prevent saving "Uncategorized"
+                // under "Create new" implicitly.
+                const currentNote = notes.find(note => note.id === activeNoteId);
+                populateCategoryDropdown(currentNote ? currentNote.category : "Uncategorized");
+            }
+        }
     });
     
     // Theme toggle button
